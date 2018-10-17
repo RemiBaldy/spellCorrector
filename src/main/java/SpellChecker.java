@@ -66,13 +66,7 @@ class SpellChecker {
             String key = stringHashtableEntry.getKey();
             System.out.println(key);
         }
-    }/*
-    public void printMisspelledWordsFound() {
-        for (Map.Entry<String, Hashtable<String, Integer>> stringHashtableEntry : missSpelledWordsProbableCorrections.entrySet()) {
-            String key = stringHashtableEntry.getKey();
-            System.out.println(key);
-        }
-    }*/
+    }
 
 
     /**
@@ -96,8 +90,6 @@ class SpellChecker {
         }
     }
 
-
-
     /**
      * insert the correct word found or increment his count if already there in the missSpelledWordsProbableCorrections hashtable     *
      * @param misspelledWord word
@@ -107,6 +99,7 @@ class SpellChecker {
         Hashtable<String,Integer> corrections = missSpelledWordsProbableCorrections.get(misspelledWord);
         corrections.put(correctWord, corrections.getOrDefault(correctWord,0)+1);
     }
+
 
     public void printTrigrams(){
         for (Map.Entry<String, Hashtable<String, String>> trigrams : trigrams.entrySet()) {

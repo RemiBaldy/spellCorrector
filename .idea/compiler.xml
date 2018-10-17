@@ -9,8 +9,5 @@
         <module name="spellCorrector" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="1.8">
-      <module name="spellCorrector" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

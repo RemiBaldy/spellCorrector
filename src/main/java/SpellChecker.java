@@ -13,18 +13,32 @@ import java.util.Set;
 class SpellChecker {
 
     private Dictionary dictionary;
+
+    /**
+     * Before levensteinDistanceComputing :
+     * Each misspelled word is associated with the correct words with same trigrams and the number of times trigrams matched
+     * between the correct and misspelled word, exemple : (chietn(chien,3)(chienne, 3)...)
+     *
+     * After : Each misspelled word is associated with the correct words and the levenstein distance corresponding.
+     *
+     */
     private Hashtable<String, Hashtable<String, Integer>> missSpelledWordsProbableCorrections;
+
+    /**
+     * Liste des trigrammes de mots faux associés à ces mots faux, exemple : (pas (passert, passert)(passat, passat)...)
+     */
     private Hashtable<String, Hashtable<String, String>> trigrams;
+
 
     public SpellChecker(Dictionary dictionary, String fileWithSpellingErrorsPath) throws IOException {
         this.dictionary = dictionary;
         missSpelledWordsProbableCorrections = new Hashtable<>();
         trigrams = new Hashtable<>();
-        fillMisspelledDataStructures(fileWithSpellingErrorsPath);
+        initialiseDataStructures(fileWithSpellingErrorsPath);
     }
 
 
-    public void fillMisspelledDataStructures(String filePath) throws IOException {
+    public void initialiseDataStructures(String filePath) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(filePath));
 
         for(String word =  reader.readLine(); word != null ;word =  reader.readLine())
@@ -37,14 +51,14 @@ class SpellChecker {
 
     private void createTrigrams(String word) {
         String missSpelledWord = "<"+word+">";
-        String trigram;
+        StringBuilder trigram;
         for(int i =0; i < missSpelledWord.length()-2; i++){
-            trigram = "";
+            trigram = new StringBuilder();
             for(int j = i; j < i+3;j++)
-                trigram += missSpelledWord.charAt(j);
+                trigram.append(missSpelledWord.charAt(j));
 
             //System.out.println("addTrigram "+ trigram + " word "+word);
-            addTrigram(trigram, word);
+            addTrigram(trigram.toString(), word);
         }
     }
 
@@ -95,9 +109,45 @@ class SpellChecker {
      * @param misspelledWord word
      * @param correctWord word
      */
-    public void incrementCorrectWordMatchingCount(String misspelledWord , String correctWord){
+    private void incrementCorrectWordMatchingCount(String misspelledWord , String correctWord){
         Hashtable<String,Integer> corrections = missSpelledWordsProbableCorrections.get(misspelledWord);
         corrections.put(correctWord, corrections.getOrDefault(correctWord,0)+1);
+    }
+
+    /**
+     * Iterate on missSpelledWordsProbableCorrections and compute levenstein distance for each (misspelledWord, correctWord) couple.
+     * Then add this distance in the missSpelledWordsProbableCorrections hashtable.
+     */
+    public void computeLevensteinDistances(){
+        for (Map.Entry<String, Hashtable<String, Integer>> misspellWords : missSpelledWordsProbableCorrections.entrySet()) {
+            Hashtable<String, Integer> correctWords = misspellWords.getValue();
+            for(String correctWord : correctWords.keySet()){
+                correctWords.put(correctWord, computeLevensteinDistance(correctWord,misspellWords.getKey()));
+            }
+        }
+    }
+
+    /**
+     * Use the class levensteinDistance to calculate it
+     * @param correctWord
+     * @param misspelledWord
+     * @return
+     */
+    private int computeLevensteinDistance(String correctWord, String misspelledWord){
+        return new levenshteinDistance(correctWord, misspelledWord).computeLevensteinDistance();
+    }
+
+    public void printMostProbableCorrectionAfterLevenstein(){
+        for (Map.Entry<String, Hashtable<String, Integer>> misspellWords : missSpelledWordsProbableCorrections.entrySet()) {
+            Set<String> correctWordsKeys = misspellWords.getValue().keySet();
+            for (String correctWordkKey : correctWordsKeys){
+                //if(misspellWords.get(correctWordkKey))
+            }
+        }
+    }
+
+    private void lowestLevensteinDistanceOf1MisspelledWord(){
+
     }
 
 

@@ -31,5 +31,14 @@ public class SpellCheckerTest {
         spellChecker.printTrigrams();
 
     }
+    @Test
+    public void testLevensteinDistance() throws IOException {
+        Dictionary dico = new Dictionary("dico.txt");
+
+        long startTime = System.nanoTime();
+        SpellChecker spellChecker = new SpellChecker(dico, "corrige.txt");
+        spellChecker.findProbableCorrectionsComparingTrigrams();
+
+    }
 
 }

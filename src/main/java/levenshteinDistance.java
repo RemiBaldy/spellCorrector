@@ -2,35 +2,60 @@ import java.util.Arrays;
 
 public class levenshteinDistance {
     private char[] misspelledWord, correctWord;
-    private int[] misspelledVector;
-    private int[] correctVector;
-    int[][] matrixDistances;
+
+    /**
+     * Represent one row of distances computing used to compute the distances of the next row
+     */
+    private int[] levensteinDistancesVector;
+
+    /**
+     * Used to store 2 distances value for the next row before putting them into "levensteinDistancesVector"
+     */
+    private int aCase, anotherCase;
+
+
 
     public levenshteinDistance(String correctWord, String misspelledWord) {
+
         this.misspelledWord = misspelledWord.toCharArray();
         this.correctWord = correctWord.toCharArray();
-
-        matrixDistances = new int[misspelledWord.length()+1][correctWord.length()+1];
-        initialiseDistances();
-        /*misspelledVector = new int[misspelledWord.length()+1];
-        correctVector = new int[correctWord.length()+1];
-        initialiseVector(misspelledVector);*/
+        levensteinDistancesVector = new int[misspelledWord.length()+1];
+        initialiseVectorDistances(levensteinDistancesVector);
     }
 
-    private void initialiseDistances() {
-        for (int i = 0; i < matrixDistances.length; i++) {
-            for (int j = 0; j < matrixDistances[0].length; j++) {
+    public int computeLevensteinDistance(){
+        return computeNextRows();
+    }
 
+    private int computeNextRows() {
+        for (char charCorrectWord : correctWord) {
+            for (int i = 0; i < levensteinDistancesVector.length; i++) {
+                if (i == 0)
+                    aCase = levensteinDistancesVector[0] + 1;
+                else {
+                    int cost = 0;
+                    if (misspelledWord[i - 1] != charCorrectWord)
+                        cost = 1;
+
+                    int min = min(aCase + 1, levensteinDistancesVector[i] + 1, levensteinDistancesVector[i - 1] + cost);
+                    levensteinDistancesVector[i-1] = aCase;
+                    aCase = min;
+                }
             }
+            levensteinDistancesVector[levensteinDistancesVector.length-1] = aCase;
         }
-
+        return levensteinDistancesVector[levensteinDistancesVector.length-1];
     }
+
+    private int min(int number, int number2, int number3) {
+        return Math.min(number,Math.min(number2, number3));
+    }
+
 
     /**
      * Remove pre/postfixes if they match for the 2 words
-     *
      */
-    public void reduceWords(){
+    private void reduceWords(){
         int i =0;
         while(correctWord[i]==misspelledWord[i]/* && i<correctWord.length && i<misspelledWord.length*/)
             i++;
@@ -47,36 +72,14 @@ public class levenshteinDistance {
     }
 
     /**
-     * fill the vector with the edit distances for the empty string compared to the other string[1...n]
+     * fill the vector with the edit distances for the string[1...n] compared to empty string
      */
-    public void initialiseVector(int[] vector){
+    private void initialiseVectorDistances(int[] vector){
         for(int i = 0; i < vector.length; i++)
             vector[i] = i;
     }
 
-    public int computeLevDistance(){
 
-
-
-
-        /*int deletionCost, insertionCost, substitutionCost = 0;
-
-        for(int i=0; i<correctWord.length; i++){
-            correctVector[0] = i+1;
-            for(int j=0; j<misspelledVector.length-1;j++){
-                deletionCost = misspelledVector[j+1]+1;
-                insertionCost = correctVector[j]+1;
-
-                if(correctWord[i] == misspelledWord[j])
-                    substitutionCost = misspelledVector[j];
-                else
-                    substitutionCost = misspelledVector[j]+1;
-
-                correctVector[j+1] = Math.min(Math.min(deletionCost, insertionCost), deletionCost);
-
-            }
-        }*/
-    }
 
 
 }

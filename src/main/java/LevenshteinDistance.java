@@ -1,6 +1,6 @@
 import java.util.Arrays;
 
-public class levenshteinDistance {
+public class LevenshteinDistance {
     private char[] misspelledWord, correctWord;
 
     /**
@@ -15,7 +15,7 @@ public class levenshteinDistance {
 
 
 
-    public levenshteinDistance(String correctWord, String misspelledWord) {
+    public LevenshteinDistance(String correctWord, String misspelledWord) {
 
         this.misspelledWord = misspelledWord.toCharArray();
         this.correctWord = correctWord.toCharArray();

@@ -2,17 +2,17 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class levenshteinDistanceTest {
+public class LevenshteinDistanceTest {
     @Test
     public void testLevensteinDistance() {
         String correctWord = "chien";
         String misspelledWord = "chein";
-        levenshteinDistance distance = new levenshteinDistance(correctWord,misspelledWord);
+        LevenshteinDistance distance = new LevenshteinDistance(correctWord,misspelledWord);
         assertEquals(2, distance.computeLevensteinDistance());
 
         correctWord = "montagne";
         misspelledWord = "amantagnes";
-        distance = new levenshteinDistance(correctWord,misspelledWord);
+        distance = new LevenshteinDistance(correctWord,misspelledWord);
         assertEquals(3, distance.computeLevensteinDistance());
 
     }

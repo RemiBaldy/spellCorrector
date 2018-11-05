@@ -3,6 +3,7 @@ import javafx.util.Pair;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Map;
@@ -15,6 +16,13 @@ class SpellChecker {
 
     private Dictionary dictionary;
 
+
+    /**
+     * Liste des trigrammes de mots faux associés à ces mots faux, exemple : (pas (passert, passert)(passat, passat)...)
+     */
+    private Hashtable<String, Hashtable<String, String>> trigrams;
+
+
     /**
      * Before levensteinDistanceComputing :
      * Each misspelled word is associated with the correct words with same trigrams and the number of times trigrams matched
@@ -25,10 +33,6 @@ class SpellChecker {
      */
     private Hashtable<String, Hashtable<String, Integer>> misSpelledWordsProbableCorrections;
 
-    /**
-     * Liste des trigrammes de mots faux associés à ces mots faux, exemple : (pas (passert, passert)(passat, passat)...)
-     */
-    private Hashtable<String, Hashtable<String, String>> trigrams;
 
     /**
      * List of misSpelled words corrections possible with the lowest levenstein distance
@@ -39,6 +43,7 @@ class SpellChecker {
     public SpellChecker(Dictionary dictionary, String fileWithSpellingErrorsPath) throws IOException {
         this.dictionary = dictionary;
         misSpelledWordsProbableCorrections = new Hashtable<>();
+        misSpelledWordsFinalCorrections = new Hashtable<>();
         trigrams = new Hashtable<>();
         initialiseDataStructures(fileWithSpellingErrorsPath);
     }
@@ -90,8 +95,8 @@ class SpellChecker {
 
 
     /**
-     * Find the correct words which trigrams match with the misspelled words trigrams contained in trigrams hashtable
-     * and  call incrementCorrectWordsMatchingCount
+     * Find the correct words which trigrams match with the misspelled words trigrams (contained in trigrams hashtable)
+     * and call incrementCorrectWordsMatchingCount
      */
     public void findProbableCorrectionsComparingTrigrams(){
         for (Map.Entry<String, Hashtable<String, String>> misspelledTrigram : trigrams.entrySet()) {
@@ -118,6 +123,7 @@ class SpellChecker {
         corrections.put(correctWord, corrections.getOrDefault(correctWord,0)+1);
     }
 
+
     /**
      * Iterate on missSpelledWordsProbableCorrections and compute levenstein distance for each (misspelledWord, correctWord) couple.
      * Then add this distance in the missSpelledWordsProbableCorrections hashtable.
@@ -141,19 +147,24 @@ class SpellChecker {
         return new LevenshteinDistance(correctWord, misspelledWord).computeLevensteinDistance();
     }
 
-    public void extractMostProbableCorrectionAfterLevenstein(){
-        int minLevensteinDistance = 100;/*needed a high default value*/
+    /**
+     * For each misspelled word : find the associated corrections with the lowest leveinstein distance and add them to misSpelledWordsFinalCorrections hashtable.
+     */
+    public void storeLowestLevDistanceCorrectionsAsFinalCorrections(){
         for (Map.Entry<String, Hashtable<String, Integer>> misspellWordCorrections : misSpelledWordsProbableCorrections.entrySet()) {
+            int minLevensteinDistance = 500;/*needed a high default value*/
             String misSpelledWord = misspellWordCorrections.getKey();
             //initialisemisSpelledWordFinalCorrections(misSpelledWord);
             Hashtable<String, Integer> wordCorrections = misspellWordCorrections.getValue();
             for (String correctWord : wordCorrections.keySet()){
                 int levensteinDistance = wordCorrections.get(correctWord);
                 if(minLevensteinDistance > levensteinDistance) {
+                    //System.out.println("create "+ misSpelledWord + " : "+correctWord +" "+levensteinDistance  );
                     minLevensteinDistance = levensteinDistance;
                     createNewFinalCorrectionsList(misSpelledWord,correctWord);
                 }
-                if(minLevensteinDistance == levensteinDistance){
+                else if(minLevensteinDistance == levensteinDistance){
+                    //System.out.println("add "+ misSpelledWord + " : "+correctWord +" "+levensteinDistance  );
                     addWordToFinalCorrections(misSpelledWord,correctWord);
                 }
             }
@@ -199,8 +210,18 @@ class SpellChecker {
                 if(highestCountWord.getValue() < correctWordCount)
                     highestCountWord = new Pair<>(correctWord, correctWordCount);
             }
-            System.out.println(highestCountWord.getKey());
-            System.out.println(highestCountWord.getValue());
+            System.out.print(misspellWordCorrections.getKey() +" --> ");
+            System.out.print(highestCountWord.getKey() + " : ");
+            System.out.println(highestCountWord.getValue() + " trigrams communs");
+        }
+    }
+
+    public void printFinalCorrections(){
+        for(Map.Entry<String, ArrayList<String>> finalCorrections : misSpelledWordsFinalCorrections.entrySet()){
+            System.out.println(finalCorrections.getKey() + " :");
+            for(String corrections : finalCorrections.getValue())
+                System.out.println("\t"+corrections);
+            System.out.println();
         }
     }
 

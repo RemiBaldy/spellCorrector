@@ -13,11 +13,13 @@ public class SpellCheckerTest {
 
         Dictionary dico = new Dictionary("dico.txt");
 
-        long startTime = System.nanoTime();
+
         SpellChecker spellChecker = new SpellChecker(dico, "corrige.txt");
         spellChecker.findProbableCorrectionsComparingTrigrams();
+        /*
+        long startTime = System.nanoTime();
         long endTime = System.nanoTime();
-        System.out.println((endTime-startTime) / 1000000+" ms");
+        System.out.println((endTime-startTime) / 1000000+" ms");*/
 
         spellChecker.printMostProbableCorrections();
 
@@ -26,19 +28,34 @@ public class SpellCheckerTest {
     }
     @Test
     public void testTrigramsCreation() throws IOException {
-        Dictionary dico = new Dictionary("dico.txt");
+        Dictionary dico = new Dictionary("petitdico.txt");
         SpellChecker spellChecker = new SpellChecker(dico, "misspelledWord.txt");
         spellChecker.printTrigrams();
 
     }
-    @Test
-    public void testLevensteinDistance() throws IOException {
-        Dictionary dico = new Dictionary("dico.txt");
 
-        long startTime = System.nanoTime();
+
+    @Test
+    public void testCorrectionsWithTrigramsMethod() throws IOException {
+        Dictionary dico = new Dictionary("petitdico.txt");
         SpellChecker spellChecker = new SpellChecker(dico, "corrige.txt");
         spellChecker.findProbableCorrectionsComparingTrigrams();
+        //spellChecker.printProbableCorrections();
+        spellChecker.printMostProbableCorrections();
+    }
+
+
+
+    @Test
+    public void finalCorrections() throws IOException {
+        Dictionary dico = new Dictionary("petitdico.txt");
+        SpellChecker spellChecker = new SpellChecker(dico, "corrige.txt");
+        spellChecker.findProbableCorrectionsComparingTrigrams();
+        spellChecker.computeLevensteinDistances();
+        spellChecker.storeLowestLevDistanceCorrectionsAsFinalCorrections();
+        spellChecker.printFinalCorrections();
 
     }
+
 
 }

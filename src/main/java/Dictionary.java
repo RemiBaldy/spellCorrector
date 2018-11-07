@@ -83,7 +83,7 @@ class Dictionary {
         if(wordsContainTrigram != null)
             wordsContainTrigram.put(word, word);
         else
-            trigramsDictionary.put(trigram,new Hashtable<String, String>(){{put(word, word);}});
+            trigramsDictionary.put(trigram,new Hashtable<>(){{put(word, word);}});
     }
 
 

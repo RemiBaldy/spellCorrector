@@ -78,7 +78,7 @@ class SpellChecker {
         if(missspelledWords != null)
             missspelledWords.put(word, word);
         else
-            trigrams.put(trigram,new Hashtable<String, String>(){{put(word, word);}});
+            trigrams.put(trigram,new Hashtable<>(){{put(word, word);}});
     }
 
     private Boolean isMissspelledWord(String word){
@@ -107,7 +107,6 @@ class SpellChecker {
                             incrementCorrectWordMatchingCount(misspelledWord, correctWord);
                         }
                     }
-
                 }
             }
         }
@@ -123,17 +122,44 @@ class SpellChecker {
         corrections.put(correctWord, corrections.getOrDefault(correctWord,0)+1);
     }
 
+    /**
+     * Find the highest number of trigrams matched count among the possible corrections
+     * for a misspelled word (Map.Entry<String, Hashtable<String, Integer>> misspellWords)
+     * @param misspelledWord an entry/a row of misSpelledWordsProbableCorrections
+     * @return maxTrigramMatchesCount
+     */
+    private int getMaxTrigramsMatchingCount(Map.Entry<String, Hashtable<String, Integer>> misspelledWord){
+            int maxTrigramMatchesCount = 0;
+            for(Map.Entry<String, Integer> correctWords : misspelledWord.getValue().entrySet()) {
+                int TrigramMatchesCount = correctWords.getValue();
+                if (TrigramMatchesCount > maxTrigramMatchesCount)
+                    maxTrigramMatchesCount = TrigramMatchesCount;
+            }
+        return maxTrigramMatchesCount;
+    }
 
     /**
      * Iterate on missSpelledWordsProbableCorrections and compute levenstein distance for each (misspelledWord, correctWord) couple.
      * Then add this distance in the missSpelledWordsProbableCorrections hashtable.
      */
     public void computeLevensteinDistances(){
-        for (Map.Entry<String, Hashtable<String, Integer>> misspellWords : misSpelledWordsProbableCorrections.entrySet()) {
-            Hashtable<String, Integer> correctWords = misspellWords.getValue();
-            for(String correctWord : correctWords.keySet()){
-                correctWords.put(correctWord, computeLevensteinDistance(correctWord,misspellWords.getKey()));
+
+        for (Map.Entry<String, Hashtable<String, Integer>> misspelledWord : misSpelledWordsProbableCorrections.entrySet()) {
+
+            int maxTrigramMatchesCount = getMaxTrigramsMatchingCount(misspelledWord);
+            Hashtable<String, Integer> correctWordsHighestTrigrams= new Hashtable<>();
+
+            for(Map.Entry<String, Integer> correctWords : misspelledWord.getValue().entrySet()){
+                int TrigramMatchesCount =  correctWords.getValue();
+                if(TrigramMatchesCount == maxTrigramMatchesCount - 1 || TrigramMatchesCount == maxTrigramMatchesCount)
+                    correctWordsHighestTrigrams.put(correctWords.getKey(), computeLevensteinDistance(correctWords.getKey(),misspelledWord.getKey()));
             }
+            misSpelledWordsProbableCorrections.put(misspelledWord.getKey(), correctWordsHighestTrigrams);
+            /*
+            Hashtable<String, Integer> correctWords = misspelledWord.getValue();
+            for(String correctWord : correctWords.keySet()){
+                correctWords.put(correctWord, computeLevensteinDistance(correctWord,misspellWord.getKey()));
+            }*/
         }
     }
 
@@ -141,18 +167,18 @@ class SpellChecker {
      * Use the class levensteinDistance to calculate it
      * @param correctWord
      * @param misspelledWord
-     * @return
+     * @return Levenstein distance
      */
     private int computeLevensteinDistance(String correctWord, String misspelledWord){
         return new LevenshteinDistance(correctWord, misspelledWord).computeLevensteinDistance();
     }
 
     /**
-     * For each misspelled word : find the associated corrections with the lowest leveinstein distance and add them to misSpelledWordsFinalCorrections hashtable.
+     * For each misspelled word : find the corrections with the lowest leveinstein distance and add them to misSpelledWordsFinalCorrections hashtable.
      */
     public void storeLowestLevDistanceCorrectionsAsFinalCorrections(){
         for (Map.Entry<String, Hashtable<String, Integer>> misspellWordCorrections : misSpelledWordsProbableCorrections.entrySet()) {
-            int minLevensteinDistance = 500;/*needed a high default value*/
+            int minLevensteinDistance = 50;/*needed a high default value*/
             String misSpelledWord = misspellWordCorrections.getKey();
             //initialisemisSpelledWordFinalCorrections(misSpelledWord);
             Hashtable<String, Integer> wordCorrections = misspellWordCorrections.getValue();
@@ -182,10 +208,6 @@ class SpellChecker {
     private void addWordToFinalCorrections(String misSpelledWord, String correctWord){
         misSpelledWordsFinalCorrections.get(misSpelledWord).add(correctWord);
     }
-
-    /*private void initialisemisSpelledWordFinalCorrections(String misSpelledWord){
-        misSpelledWordsFinalCorrections.put(misSpelledWord,new ArrayList<>(0));
-    }*/
 
 
     public void printTrigrams(){
@@ -217,12 +239,15 @@ class SpellChecker {
     }
 
     public void printFinalCorrections(){
+        int countWords = 0;
         for(Map.Entry<String, ArrayList<String>> finalCorrections : misSpelledWordsFinalCorrections.entrySet()){
+            ++countWords;
             System.out.println(finalCorrections.getKey() + " :");
             for(String corrections : finalCorrections.getValue())
                 System.out.println("\t"+corrections);
             System.out.println();
         }
+        System.out.println(countWords + " words corrected !!! \n");
     }
 
 

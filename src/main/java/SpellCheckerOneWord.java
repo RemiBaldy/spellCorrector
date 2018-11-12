@@ -13,6 +13,10 @@ import java.util.Map;
 class SpellCheckerOneWord {
 
     private Dictionary dictionary;
+
+    /**
+     * The word to correct
+     */
     private String missSpelledWord;
 
 
@@ -24,9 +28,9 @@ class SpellCheckerOneWord {
 
     /**
      * Before levensteinDistanceComputing :
-     * Hashtable<Correct words with same trigrams, number of times trigrams matched>
+     * Hashtable<Correction words with same trigrams, number of times trigrams matched>
      *
-     * After : Hashtable<Correct words with same trigrams, levenstein distance>
+     * After : Hashtable<Correction words with same trigrams, levenstein distance>
      */
     private Hashtable<String, Integer> misSpelledWordCorrections;
 
@@ -65,12 +69,10 @@ class SpellCheckerOneWord {
      */
     public void findCorrectionsComparingTrigrams(){
         for (String trigram : trigrams) {
-            for (Map.Entry<String, Hashtable<String, String>> dictioTrigram : dictionary.getTrigramsDictionary().entrySet()) {
-                if(trigram.equals(dictioTrigram.getKey())){
-                    for(String correctWord : dictioTrigram.getValue().keySet()){
-                        addOrIncrementCorrectWordMatching(correctWord);
-                    }
-                }
+            Hashtable<String,String> wordsMatchingTrigrams = dictionary.getTrigramsDictionary().get(trigram);
+            if(wordsMatchingTrigrams != null) {
+                for (String correctWord : wordsMatchingTrigrams.keySet())
+                    addOrIncrementCorrectWordMatching(correctWord);
             }
         }
     }
@@ -85,8 +87,8 @@ class SpellCheckerOneWord {
 
 
     /**
-     * Iterate on missSpelledWordsProbableCorrections and compute levenstein distance for each (misspelledWord, correctWord) couple.
-     * Then add this distance in the missSpelledWordsProbableCorrections hashtable.
+     * Iterate on missSpelledWordsCorrections, only for the corrections with high trigrams matching count -> compute levenstein distance.
+     * And update the misSpelledWordCorrections by replacing the trigramMatchesCount with the Leveinstein Distance
      */
     public void computeLevensteinDistances(){
             int maxTrigramMatchesCount = getMaxTrigramsMatchingCount();
@@ -150,7 +152,9 @@ class SpellCheckerOneWord {
         misSpelledWordsFinalCorrections.add(correctWord);
     }
 
-
+    /**
+     * Print the result of the SpellChecker process
+     */
     public void printFinalCorrections(){
         System.out.println(missSpelledWord + " : ");
         for(String correctWord : misSpelledWordsFinalCorrections){
